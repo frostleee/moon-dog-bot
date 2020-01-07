@@ -1,0 +1,2 @@
+class GoroskopException(Exception):
+    pass
