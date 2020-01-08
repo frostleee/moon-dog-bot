@@ -1,4 +1,5 @@
 import requests
+import re
 from bs4 import BeautifulSoup
 from cachetools import cached, TTLCache
 from telegram.ext import Updater, CallbackContext
@@ -50,15 +51,16 @@ def get_goroskop(chat_id, context: CallbackContext):
     soup = BeautifulSoup(r.content, 'html.parser')
     goroskop = dict()
     for zodiac in zodiac_signs:
-        p = soup.find('p', text=zodiac)
-        goroskop[p.text] = p.find_next('p').text
+        regex = r'(.*)?(' + re.escape(zodiac) + r')$'
+        p = soup.find(name=re.compile('p|h3'), text=re.compile(regex))
+        goroskop[zodiac] = p.find_next('p').text
     return goroskop
 
 
 def get_everyday_url():
     r = requests.get(url, headers=headers)
     if r.status_code != 200:
-        raise ValueError('undefined status code')
+        raise GoroskopException('Не смог достучаться до астрологов, сорри :(')
     soup = BeautifulSoup(r.content, 'html.parser')
     container = soup.find('div', {'class': 'col8'})
     return container.a.get('href')
