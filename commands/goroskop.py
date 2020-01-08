@@ -6,7 +6,6 @@ from telegram.ext import Updater, CallbackContext
 from telegram.parsemode import ParseMode
 
 from utils.exceptions import GoroskopException
-from utils.messages import RandomFunMessages
 from .decorator import command
 
 url = 'https://www.5-tv.ru/news/goroskop/'
@@ -34,7 +33,7 @@ def goroskop(updater: Updater, context: CallbackContext, args: list):
             raise GoroskopException('Мне не известен этот знак зодиака')
 
         chat_id = updater.message.chat_id
-        goroskop_list = get_goroskop(chat_id, context)
+        goroskop_list = get_goroskop()
         text = '*%s*:\n%s' % (zodiac, goroskop_list[zodiac])
         context.bot.send_message(chat_id=chat_id,
                                  text=text,
@@ -43,9 +42,8 @@ def goroskop(updater: Updater, context: CallbackContext, args: list):
         updater.message.reply_text(text=str(e), parse_mode=ParseMode.MARKDOWN)
 
 
-@cached(TTLCache(maxsize=2048, ttl=7200))
-def get_goroskop(chat_id, context: CallbackContext):
-    context.bot.send_message(chat_id=chat_id, text=RandomFunMessages.get('goroskop'))
+@cached(cache=TTLCache(maxsize=1024, ttl=7200))
+def get_goroskop():
     goroskop_url = get_everyday_url()
     r = requests.get(goroskop_url, headers=headers)
     soup = BeautifulSoup(r.content, 'html.parser')
