@@ -5,7 +5,7 @@ import re
 from telegram.ext import Updater, CallbackContext
 from .decorator import command
 
-url = 'https://www.reddit.com/r/dankmemes/new.json?limit=100'
+url = 'https://www.reddit.com/r/dankmemes/hot.json?limit=100'
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0'
