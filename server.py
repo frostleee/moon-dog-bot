@@ -31,8 +31,9 @@ def main():
 
 
 def init_dispatcher_handlers(dispatcher: Dispatcher):
-    dispatcher.add_handler(MessageHandler(filters=(Filters.regex(r'^(Л|л)унный п(е|ё)с')),
-                                          callback=command.call))
+    dispatcher.add_handler(
+        MessageHandler(filters=(Filters.regex(r'^(Л|л)унный п(е|ё)с') & ~Filters.update.edited_message),
+                       callback=command.call))
 
 
 def error(updater: Updater, context: CallbackContext):
