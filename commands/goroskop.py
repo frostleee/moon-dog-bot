@@ -21,7 +21,7 @@ zodiac_signs = [
 ]
 
 
-@command.register(name='гороскоп')
+@command.register(name='гороскоп', description='скажет что говорят звезды на сегоднящний день')
 def goroskop(updater: Updater, context: CallbackContext, args: list):
     try:
         if not args:

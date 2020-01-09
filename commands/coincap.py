@@ -13,7 +13,7 @@ symbols = {
 }
 
 
-@command.register(name='крипта')
+@command.register(name='крипта', description='выведит список всех популярных криптовалют')
 def coincap(updater: Updater, context: CallbackContext, args: list):
     response = requests.get(url)
 
