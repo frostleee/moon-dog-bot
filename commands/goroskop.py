@@ -1,12 +1,12 @@
 import requests
 import re
+
 from bs4 import BeautifulSoup
 from cachetools import cached, TTLCache
 from telegram.ext import Updater, CallbackContext
 from telegram.parsemode import ParseMode
-
 from utils.exceptions import GoroskopException
-from .decorator import command
+from handlers.commands import command
 
 url = 'https://www.5-tv.ru/news/goroskop/'
 

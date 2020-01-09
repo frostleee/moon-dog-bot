@@ -1,7 +1,6 @@
 from telegram.ext import Updater, CallbackContext
 from telegram.parsemode import ParseMode
-
-from .decorator import command
+from handlers.commands import command
 
 
 @command.register(name='помощь', description='список всех собачьих комманд')

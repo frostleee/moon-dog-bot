@@ -2,7 +2,7 @@ import logging
 
 from telegram.ext import Updater, CallbackContext, MessageHandler, Filters, Dispatcher
 from utils.settings import get
-from commands.decorator import command
+from handlers.commands import command
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
@@ -21,8 +21,6 @@ def main():
 
     updater = Updater(token=token, request_kwargs=request_kwargs, use_context=True)
     dispatcher = updater.dispatcher
-
-    print('Start')
 
     init_dispatcher_handlers(dispatcher)
 

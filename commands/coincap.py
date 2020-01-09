@@ -3,7 +3,7 @@ import telegram
 
 from telegram.ext import Updater, CallbackContext
 from utils.messages import RandomFunMessages
-from .decorator import command
+from handlers.commands import command
 
 url = 'https://api.coincap.io/v2/assets?limit=20'
 
