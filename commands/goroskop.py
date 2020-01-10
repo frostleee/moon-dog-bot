@@ -1,7 +1,6 @@
 import requests
 import re
 import datetime
-import sys
 
 from bs4 import BeautifulSoup
 from cachetools import cached, TTLCache
@@ -9,12 +8,6 @@ from telegram.ext import Updater, CallbackContext
 from telegram.parsemode import ParseMode
 from utils.exceptions import GoroskopException
 from handlers.commands import command
-
-url = 'https://www.5-tv.ru/news/goroskop/'
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0'
-}
 
 zodiac_signs = [
     'Овен', 'Телец', 'Близнецы', 'Рак',
@@ -49,10 +42,10 @@ def get_goroskop():
     goroskop_url = get_everyday_url()
 
     if not goroskop_url:
-        raise GoroskopException('Не смог достучаться до астрологов, сорри :('
-                                '')
-    r = requests.get(goroskop_url, headers=headers)
-    soup = BeautifulSoup(r.content, 'html.parser')
+        raise GoroskopException('Чет астрологи мне наговорили всякой херни, ничего не понял')
+
+    soup = get_beautiful_soup(goroskop_url)
+
     goroskop = dict()
 
     for zodiac in zodiac_signs:
@@ -65,16 +58,11 @@ def get_goroskop():
 
 @cached(cache=TTLCache(maxsize=256, ttl=72000))
 def get_everyday_url():
-    r = requests.get(url, headers=headers)
-
-    if r.status_code != 200:
-        raise GoroskopException('Не смог достучаться до астрологов, сорри :(')
-
-    now = datetime.datetime.now()
-    regex = r'(.*)?((Гороскоп).*%d(.*)\d{4})(.*)?' % now.day
-    soup = BeautifulSoup(r.content, 'html.parser')
+    soup = get_beautiful_soup('https://www.5-tv.ru/news/goroskop/')
     last_posts = soup.find(name='div', attrs={'class': 'col4'})
     links = last_posts.find_all_next(name='a')
+
+    regex = r'(.*)?((Гороскоп).*%d(.*)\d{4})(.*)?' % datetime.datetime.now().day
 
     for link in links:
         fs_text = link.find_next(name='p', attrs={'class': 'fsText'})
@@ -83,3 +71,16 @@ def get_everyday_url():
             return link.get('href')
 
     return None
+
+
+def get_beautiful_soup(url: str):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0'
+    }
+
+    r = requests.get(url=url, headers=headers)
+
+    if int(r.status_code) != 200:
+        raise GoroskopException('Не смог достучаться до астрологов, сорри :(')
+
+    return BeautifulSoup(r.content, 'html.parser')
