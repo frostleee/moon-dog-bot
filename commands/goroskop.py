@@ -1,6 +1,7 @@
 import requests
 import re
 import datetime
+import random
 
 from bs4 import BeautifulSoup
 from cachetools import cached, TTLCache
@@ -13,6 +14,12 @@ zodiac_signs = [
     'Овен', 'Телец', 'Близнецы', 'Рак',
     'Лев', 'Дева', 'Весы', 'Скорпион',
     'Стрелец', 'Козерог', 'Водолей', 'Рыбы'
+]
+
+advice = [
+    '*Межгалактический совет*', '*Лунный совет*',
+    '*Собачий совет*', '*Совет от первого ордена*',
+    '*Совет*'
 ]
 
 
@@ -29,9 +36,13 @@ def goroskop(updater: Updater, context: CallbackContext, args: list):
 
         chat_id = updater.message.chat_id
         goroskop_list = get_goroskop()
-        text = '*%s*:\n%s' % (zodiac, goroskop_list[zodiac])
+
+        ad = goroskop_list[zodiac]['advice'].replace('Космический совет', random.choice(advice))
+        text = goroskop_list[zodiac]['text']
+        message = '*%s*:\n%s\n%s' % (zodiac, text, ad)
+
         context.bot.send_message(chat_id=chat_id,
-                                 text=text,
+                                 text=message,
                                  parse_mode=ParseMode.MARKDOWN)
     except GoroskopException as e:
         updater.message.reply_text(text=str(e), parse_mode=ParseMode.MARKDOWN)
@@ -51,7 +62,12 @@ def get_goroskop():
     for zodiac in zodiac_signs:
         regex = r'(.*)?(' + re.escape(zodiac) + r')$'
         p = soup.find(name=re.compile('p|h3'), text=re.compile(regex))
-        goroskop[zodiac] = p.find_next('p').text
+        text = p.find_next('p')
+        advice = text.find_next('p')
+        goroskop[zodiac] = {
+            'text': text.text,
+            'advice': advice.text
+        }
 
     return goroskop
 
@@ -59,18 +75,26 @@ def get_goroskop():
 @cached(cache=TTLCache(maxsize=256, ttl=72000))
 def get_everyday_url():
     soup = get_beautiful_soup('https://www.5-tv.ru/news/goroskop/')
-    last_posts = soup.find(name='div', attrs={'class': 'col4'})
+    last_posts = soup.find(name='div', attrs={'class': ['col8', 'col4']})
     links = last_posts.find_all_next(name='a')
 
     regex = r'(.*)?((Гороскоп).*%d(.*)\d{4})(.*)?' % datetime.datetime.now().day
+    result_link = None
 
     for link in links:
-        fs_text = link.find_next(name='p', attrs={'class': 'fsText'})
-        strong = fs_text.find_next(name='strong', attrs={'class': 'link'}, text=re.compile(regex))
-        if strong:
-            return link.get('href')
+        h3 = link.find_next(name='h3', attrs={'class': 'link'}, text=re.compile(regex))
+        if h3:
+            result_link = link.get('href')
+        else:
+            fs_text = link.find_next(name='p', attrs={'class': 'fsText'})
+            strong = fs_text.find_next(name='strong', attrs={'class': 'link'}, text=re.compile(regex))
+            if strong:
+                result_link = link.get('href')
 
-    return None
+        if result_link:
+            break
+
+    return result_link
 
 
 def get_beautiful_soup(url: str):
