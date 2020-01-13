@@ -78,7 +78,7 @@ def get_everyday_url():
     last_posts = soup.find(name='div', attrs={'class': ['col8', 'col4']})
     links = last_posts.find_all_next(name='a')
 
-    regex = r'(.*)?((Гороскоп).*%d(.*)\d{4})(.*)?' % datetime.datetime.now().day
+    regex = r'(.*)?((Гороскоп).*%d(.*)(\d{4})?)(.*)?' % datetime.datetime.now().day
     result_link = None
 
     for link in links:
